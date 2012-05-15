@@ -4,23 +4,19 @@ include $(CLEAR_VARS)
 include frameworks/base/media/libstagefright/codecs/common/Config.mk
 include frameworks/base/media/CedarX-Projects/Config.mk
 
-ifeq ($(CEDARX_ANDROID_VERSION),4)
-CEDARA_VERSION_TAG = _
-else
 CEDARA_VERSION_TAG = _ICS_
-endif
 
-LOCAL_SRC_FILES:=                         \
-		CedarARender.cpp \
-        CedarAPlayer.cpp				  
+LOCAL_SRC_FILES:=                \
+                 CedarARender.cpp \
+                 CedarAPlayer.cpp				  
 
 
 LOCAL_C_INCLUDES:= \
-	$(JNI_H_INCLUDE) \
-	$(LOCAL_PATH)/include \
-	${CEDARX_TOP}/libcodecs/include \
-	$(TOP)/frameworks/base/include/media/stagefright \
-    $(TOP)/frameworks/base/include/media/stagefright/openmax
+        $(JNI_H_INCLUDE) \
+        $(LOCAL_PATH)/include \
+        ${CEDARX_TOP}/libcodecs/include \
+        $(TOP)/frameworks/base/include/media/stagefright \
+        $(TOP)/frameworks/base/include/media/stagefright/openmax
 
 LOCAL_SHARED_LIBRARIES := \
         libbinder         \
