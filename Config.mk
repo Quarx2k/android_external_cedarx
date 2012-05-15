@@ -14,7 +14,7 @@ CEDARX_DEBUG_DEMUXER := N
 endif
 
 
-CEDARX_TOP := $(TOP)/external/cedarx
+CEDARX_TOP := $(TOP)/external/cedarx/CedarX
 CEDARM_TOP := ${CEDARX_TOP}/libexternal/CedarM
 CEDARX_ENABLE_MEMWATCH := N
 
