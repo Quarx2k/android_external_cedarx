@@ -1,8 +1,20 @@
 #this file is used for Android compile configuration
+CEDARX_PRODUCTOR := GENERIC
 
-include frameworks/base/media/CedarX-Projects/ProductorConfig
+CEDARX_DEBUG_ENABLE := N
 
-CEDARX_TOP := $(TOP)/frameworks/base/media/CedarX-Projects/CedarX
+ifeq ($(CEDARX_DEBUG_ENABLE), Y)
+CEDARX_DEBUG_FRAMEWORK := Y
+CEDARX_DEBUG_CEDARV := Y
+CEDARX_DEBUG_DEMUXER := Y
+else
+CEDARX_DEBUG_FRAMEWORK := N
+CEDARX_DEBUG_CEDARV := N
+CEDARX_DEBUG_DEMUXER := N
+endif
+
+
+CEDARX_TOP := $(TOP)/external/cedarx
 CEDARM_TOP := ${CEDARX_TOP}/libexternal/CedarM
 CEDARX_ENABLE_MEMWATCH := N
 
