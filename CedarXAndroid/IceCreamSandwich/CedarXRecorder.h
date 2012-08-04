@@ -84,7 +84,7 @@ public:
 		DeathNotifier() {}
 		virtual void binderDied(const wp<IBinder>& who)
 		{
-			LOGI("Camera recording proxy died");
+			ALOGI("Camera recording proxy died");
 		}
 	};
 

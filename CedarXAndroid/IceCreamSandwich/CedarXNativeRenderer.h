@@ -20,7 +20,7 @@
 
 
 #include <utils/RefBase.h>
-#include <ui/android_native_buffer.h>
+//#include <ui/android_native_buffer.h>
 #include <OMX_IVCommon.h>
 #include <hardware/hwcomposer.h>
 

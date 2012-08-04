@@ -20,7 +20,8 @@
 
 #include <media/stagefright/ColorConverter.h>
 #include <utils/RefBase.h>
-#include <ui/android_native_buffer.h>
+#include <android/native_window_jni.h>
+//#include <ui/android_native_buffer.h>
 
 namespace android {
 

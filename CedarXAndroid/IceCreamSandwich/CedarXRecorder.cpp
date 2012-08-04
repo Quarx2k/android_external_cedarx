@@ -6,11 +6,12 @@
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
-#include <media/stagefright/MediaDebug.h>
+//#include <media/stagefright/MediaDebug.h>
+#include <media/stagefright/foundation/ADebug.h>
 #include <media/MediaProfiles.h>
 #include <camera/ICamera.h>
 #include <camera/CameraParameters.h>
-#include <surfaceflinger/Surface.h>
+#include <gui/Surface.h>
 
 #include <type_camera.h>
 #include <CDX_PlayerAPI.h>
@@ -203,7 +204,7 @@ status_t CedarXRecorder::setCamera(const sp<ICamera>& camera, const sp<ICameraRe
     int64_t token = IPCThreadState::self()->clearCallingIdentity();
 	
 	if ((err = isCameraAvailable(camera, proxy, mCameraId)) != OK) {
-        LOGE("Camera connection could not be established.");
+        ALOGE("Camera connection could not be established.");
         return err;
     }
 	
@@ -392,9 +393,10 @@ static void AudioRecordCallbackFunction(int event, void *user, void *info) {
 status_t CedarXRecorder::CreateAudioRecorder()
 {
 	CHECK(mAudioChannels == 1 || mAudioChannels == 2);
-    uint32_t flags = AudioRecord::RECORD_AGC_ENABLE |
-                     AudioRecord::RECORD_NS_ENABLE  |
-                     AudioRecord::RECORD_IIR_ENABLE;
+    AudioRecord::record_flags flags = (AudioRecord::record_flags)
+                        (AudioRecord::RECORD_AGC_ENABLE |
+                         AudioRecord::RECORD_NS_ENABLE  |
+                         AudioRecord::RECORD_IIR_ENABLE);
     mRecord = new AudioRecord(
                 mAudioSource, mSampleRate, AUDIO_FORMAT_PCM_16_BIT,
                 mAudioChannels > 1? AUDIO_CHANNEL_IN_STEREO: AUDIO_CHANNEL_IN_MONO,
@@ -580,16 +582,17 @@ status_t CedarXRecorder::start()
 		mRecord->start();
 	}
 
-	LOGV("startCameraRecording");
+	ALOGV("startCameraRecording");
     // Reset the identity to the current thread because media server owns the
     // camera and recording is started by the applications. The applications
     // will connect to the camera in ICameraRecordingProxy::startRecording.
     int64_t token = IPCThreadState::self()->clearCallingIdentity();
+
     if (mCameraFlags & FLAGS_HOT_CAMERA) 
 	{
         mCamera->unlock();
         mCamera.clear();
-        CHECK_EQ(OK, mCameraProxy->startRecording(new CameraProxyListener(this)));
+        CHECK_EQ((status_t)OK, mCameraProxy->startRecording(new CameraProxyListener(this)));
     } 
 	else 
 	{
@@ -892,7 +895,7 @@ int CedarXRecorder::CedarXRecorderCallback(int event, void *info)
 	int ret = 0;
 	int *para = (int*)info;
 
-	//LOGV("----------CedarXRecorderCallback event:%d info:%p\n", event, info);
+	//ALOGV("----------CedarXRecorderCallback event:%d info:%p\n", event, info);
 
 	switch (event) {
 	case CDX_EVENT_READ_AUDIO_BUFFER:

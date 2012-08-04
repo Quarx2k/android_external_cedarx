@@ -81,9 +81,9 @@ status_t CedarAAudioPlayer::start(bool sourceAlreadyStarted)
     	LOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
         status_t err = mAudioSink->open(
 #ifdef __ANDROID_VERSION_2_3_4
-                mSampleRate, mNumChannels, AudioSystem::PCM_16_BIT,
+                mSampleRate, mNumChannels, CHANNEL_MASK_USE_CHANNEL_ORDER, AudioSystem::PCM_16_BIT,
 #else
-                mSampleRate, mNumChannels, AUDIO_FORMAT_PCM_16_BIT,
+                mSampleRate, mNumChannels, CHANNEL_MASK_USE_CHANNEL_ORDER, AUDIO_FORMAT_PCM_16_BIT,
 #endif
                 DEFAULT_AUDIOSINK_BUFFERCOUNT,
                 &CedarAAudioPlayer::AudioSinkCallback, this);

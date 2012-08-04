@@ -16,8 +16,8 @@ LOCAL_SRC_FILES:= \
 
 LOCAL_C_INCLUDES:= \
         $(JNI_H_INCLUDE) \
-        $(TOP)/frameworks/base/include/media/stagefright \
-        $(TOP)/frameworks/base/include/media/stagefright/openmax \
+        $(TOP)/frameworks/av/include/media/stagefright \
+        $(TOP)/frameworks/native/include/media/openmax \
         $(CEDARX_TOP)/include \
         $(CEDARX_TOP)/libutil \
         $(CEDARX_TOP)/include/include_cedarv \
@@ -39,7 +39,7 @@ LOCAL_SHARED_LIBRARIES := \
         libcamera_client \
         libstagefright_foundation \
         libicuuc \
-        libsurfaceflinger_client \
+        libsurfaceflinger \
         libskia 
 
 ifeq ($(CEDARX_DEBUG_FRAMEWORK),Y)

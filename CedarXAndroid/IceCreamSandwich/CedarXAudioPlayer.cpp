@@ -18,6 +18,8 @@
 #define LOG_TAG "CedarXAudioPlayer"
 #include <utils/Log.h>
 
+#include <media/mediaplayer.h>
+#include <media/MediaPlayerInterface.h>
 #include <binder/IPCThreadState.h>
 #include <media/AudioTrack.h>
 #include <media/stagefright/foundation/ADebug.h>
@@ -76,7 +78,7 @@ status_t CedarXAudioPlayer::start(bool sourceAlreadyStarted)
     if (mAudioSink.get() != NULL) {
     	LOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
         status_t err = mAudioSink->open(
-                mSampleRate, numChannels, AUDIO_FORMAT_PCM_16_BIT,
+                mSampleRate, numChannels, CHANNEL_MASK_USE_CHANNEL_ORDER, AUDIO_FORMAT_PCM_16_BIT,
                 DEFAULT_AUDIOSINK_BUFFERCOUNT,
                 &CedarXAudioPlayer::AudioSinkCallback, this);
         if (err != OK) {

@@ -27,17 +27,18 @@
 #include <media/stagefright/MediaBuffer.h>
 #include <media/stagefright/MediaDefs.h>
 #include <media/stagefright/MediaExtractor.h>
-#include <media/stagefright/MediaDebug.h>
+//#include <media/stagefright/MediaDebug.h>
+#include <media/stagefright/foundation/ADebug.h>
 #include <media/stagefright/MediaSource.h>
 #include <media/stagefright/MetaData.h>
 #ifdef __ANDROID_VERSION_2_3_4
 #include <media/stagefright/VideoRenderer.h>
-#include <surfaceflinger/ISurface.h>
+#include <gui/ISurface.h>
 #else
-#include <surfaceflinger/Surface.h>
+#include <gui/Surface.h>
 #include <gui/ISurfaceTexture.h>
 #include <gui/SurfaceTextureClient.h>
-#include <surfaceflinger/ISurfaceComposer.h>
+#include <gui/ISurfaceComposer.h>
 #endif
 #include <media/stagefright/foundation/ALooper.h>
 #include <OMX_IVCommon.h>

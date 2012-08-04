@@ -15,8 +15,8 @@ LOCAL_C_INCLUDES:= \
         $(JNI_H_INCLUDE) \
         $(LOCAL_PATH)/include \
         ${CEDARX_TOP}/libcodecs/include \
-        $(TOP)/frameworks/base/include/media/stagefright \
-        $(TOP)/frameworks/base/include/media/stagefright/openmax
+        $(TOP)/frameworks/av/include/media/stagefright \
+        $(TOP)/frameworks/native/include/media/openmax
 
 LOCAL_SHARED_LIBRARIES := \
         libbinder         \

@@ -24,8 +24,10 @@
 #include <binder/MemoryHeapPmem.h>
 #include <media/stagefright/foundation/ADebug.h>
 #include <media/stagefright/MetaData.h>
-#include <surfaceflinger/Surface.h>
-#include <ui/android_native_buffer.h>
+#include <android/native_window_jni.h>
+#include <gui/Surface.h>
+//#include <ui/android_native_buffer.h>
+#include <EGL/egl.h>
 #include <ui/GraphicBufferMapper.h>
 #include <gui/ISurfaceTexture.h>
 
