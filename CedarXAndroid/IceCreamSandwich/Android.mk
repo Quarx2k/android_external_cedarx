@@ -1,7 +1,7 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-include frameworks/base/media/libstagefright/codecs/common/Config.mk
+include frameworks/av/media/libstagefright/codecs/common/Config.mk
 include external/cedarx/Config.mk
 
 LOCAL_SRC_FILES:= \
