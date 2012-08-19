@@ -106,7 +106,7 @@ void CedarXSoftwareRenderer::render(
     ANativeWindowBuffer *buf;
     int err;
     if ((err = mNativeWindow->dequeueBuffer(mNativeWindow.get(), &buf)) != 0) {
-        LOGW("Surface::dequeueBuffer returned error %d", err);
+        ALOGW("Surface::dequeueBuffer returned error %d", err);
         return;
     }
 
@@ -126,7 +126,8 @@ void CedarXSoftwareRenderer::render(
     size_t dst_c_size = dst_c_stride * buf->height / 2;
 
     //LOGV("buf->stride:%d buf->height:%d", buf->stride, buf->height);
-    memcpy(dst, data, dst_y_size * 3 / 2); LOGV("render size error!");
+    memcpy(dst, data, dst_y_size * 3 / 2); 
+    ALOGV("render size error!");
 //    memcpy(dst, data, dst_y_size + dst_c_size*2);
 
 #if 0
@@ -150,7 +151,7 @@ void CedarXSoftwareRenderer::render(
     CHECK_EQ(0, mapper.unlock(buf->handle));
 
     if ((err = mNativeWindow->queueBuffer(mNativeWindow.get(), buf)) != 0) {
-        LOGW("Surface::queueBuffer returned error %d", err);
+        ALOGW("Surface::queueBuffer returned error %d", err);
     }
     buf = NULL;
 

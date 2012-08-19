@@ -78,7 +78,7 @@ status_t CedarAAudioPlayer::start(bool sourceAlreadyStarted)
 	CHECK(!mStarted);
 
     if (mAudioSink.get() != NULL) {
-    	LOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+    	ALOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
         status_t err = mAudioSink->open(
 #ifdef __ANDROID_VERSION_2_3_4
                 mSampleRate, mNumChannels, CHANNEL_MASK_USE_CHANNEL_ORDER, AudioSystem::PCM_16_BIT,
@@ -242,16 +242,16 @@ size_t CedarAAudioPlayer::fillBuffer(void *data, size_t size)
 		mAudioBufferPtr = (char *)data;
 	}
 
-    LOGV("++++tobe fillBuffer size:%d",mAudioBufferSize);
+    ALOGV("++++tobe fillBuffer size:%d",mAudioBufferSize);
     while (mAudioBufferSize > 0) {
-    	LOGV("tobe fillBuffer size:%d",mAudioBufferSize);
+    	ALOGV("tobe fillBuffer size:%d",mAudioBufferSize);
 
     	if (mReachedEOS)
     	     return 0;
 
         usleep(10*1000);
     }
-    LOGV("----tobe fillBuffer size:%d",mAudioBufferSize);
+    ALOGV("----tobe fillBuffer size:%d",mAudioBufferSize);
     return size;
 }
 
@@ -275,7 +275,7 @@ int CedarAAudioPlayer::render(void* data, int len)
 	memcpy(mAudioBufferPtr, data, tobe_fill_size);
 	mAudioBufferSize -= tobe_fill_size;
 	mAudioBufferPtr += tobe_fill_size;
-	LOGV("++++fillBuffer size:%d",tobe_fill_size);
+	ALOGV("++++fillBuffer size:%d",tobe_fill_size);
 	return tobe_fill_size;
 }
 

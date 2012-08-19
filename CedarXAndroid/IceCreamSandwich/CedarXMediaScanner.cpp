@@ -116,7 +116,7 @@ status_t CedarXMediaScanner::processFile(
 }
 
 char *CedarXMediaScanner::extractAlbumArt(int fd) {
-    LOGV("extractAlbumArt %d", fd);
+    ALOGV("extractAlbumArt %d", fd);
 
     off_t size = lseek(fd, 0, SEEK_END);
     if (size < 0) {

@@ -35,7 +35,6 @@ LOCAL_SHARED_LIBRARIES := \
         libcutils \
         libui \
         libgui \
-        libsurfaceflinger_client \
         libcamera_client \
         libstagefright_foundation \
         libicuuc \

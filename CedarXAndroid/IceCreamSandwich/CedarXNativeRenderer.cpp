@@ -122,7 +122,7 @@ int CedarXNativeRenderer::control(int cmd, int para) {
 	case VIDEORENDER_CMD_GETBLACKEXTEN   :
 		return mNativeWindow->perform(mNativeWindow.get(), NATIVE_WINDOW_SETPARAMETER, cmd, para);
 	default:
-		LOGW("undefined command!");
+		ALOGW("undefined command!");
 		break;
 	}
 

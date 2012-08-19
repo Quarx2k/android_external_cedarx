@@ -76,7 +76,7 @@ status_t CedarXAudioPlayer::start(bool sourceAlreadyStarted)
 	CHECK(!mStarted);
 
     if (mAudioSink.get() != NULL) {
-    	LOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+    	ALOGV("AudioPlayer::start 0.1 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
         status_t err = mAudioSink->open(
                 mSampleRate, numChannels, CHANNEL_MASK_USE_CHANNEL_ORDER, AUDIO_FORMAT_PCM_16_BIT,
                 DEFAULT_AUDIOSINK_BUFFERCOUNT,
@@ -91,7 +91,7 @@ status_t CedarXAudioPlayer::start(bool sourceAlreadyStarted)
 
         mAudioSink->start();
     } else {
-    	LOGV("AudioPlayer::start 0.2 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+    	ALOGV("AudioPlayer::start 0.2 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
     	status_t err;
         mAudioTrack = new AudioTrack(
                 AUDIO_STREAM_MUSIC, mSampleRate, AUDIO_FORMAT_PCM_16_BIT,
@@ -114,7 +114,7 @@ status_t CedarXAudioPlayer::start(bool sourceAlreadyStarted)
     }
 
     mStarted = true;
-    LOGV("AudioPlayer::start 0.8 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+    ALOGV("AudioPlayer::start 0.8 ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 
     return OK;
 }
@@ -230,16 +230,16 @@ size_t CedarXAudioPlayer::fillBuffer(void *data, size_t size)
 		mAudioBufferPtr = (char *)data;
 	}
 
-    LOGV("++++tobe fillBuffer size:%d",mAudioBufferSize);
+    ALOGV("++++tobe fillBuffer size:%d",mAudioBufferSize);
     while (mAudioBufferSize > 0) {
-    	LOGV("tobe fillBuffer size:%d",mAudioBufferSize);
+    	ALOGV("tobe fillBuffer size:%d",mAudioBufferSize);
 
     	if (mReachedEOS)
     	     return 0;
 
         usleep(20*1000);
     }
-    LOGV("----tobe fillBuffer size:%d",mAudioBufferSize);
+    ALOGV("----tobe fillBuffer size:%d",mAudioBufferSize);
     return size;
 }
 
@@ -263,7 +263,7 @@ int CedarXAudioPlayer::render(void* data, int len)
 	memcpy(mAudioBufferPtr, data, tobe_fill_size);
 	mAudioBufferSize -= tobe_fill_size;
 	mAudioBufferPtr += tobe_fill_size;
-	LOGV("++++fillBuffer size:%d",tobe_fill_size);
+	ALOGV("++++fillBuffer size:%d",tobe_fill_size);
 	return tobe_fill_size;
 }
 

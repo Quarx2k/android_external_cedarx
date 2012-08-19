@@ -44,14 +44,14 @@ CedarXMetadataRetriever::CedarXMetadataRetriever()
     : bCDXMetaRetriverInit(false),
       mParsedMetaData(false),
       mAlbumArt(NULL) {
-    LOGV("CedarXMetadataRetriever()");
+    ALOGV("CedarXMetadataRetriever()");
 }
 
 CedarXMetadataRetriever::~CedarXMetadataRetriever() {
-    LOGV("~CedarXMetadataRetriever()");
+    ALOGV("~CedarXMetadataRetriever()");
 
     if(bCDXMetaRetriverInit){
-    	LOGV("CDXRetriever_Destroy called!");
+    	ALOGV("CDXRetriever_Destroy called!");
         CDXRetriever_Destroy(mRetriever);
         bCDXMetaRetriverInit = false;
     }
@@ -62,7 +62,7 @@ CedarXMetadataRetriever::~CedarXMetadataRetriever() {
 status_t CedarXMetadataRetriever::setDataSource(
         const char *url,
         const KeyedVector<String8, String8> *headers){
-    LOGD("setDataSource(%s)", url);
+    ALOGD("setDataSource(%s)", url);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -73,7 +73,7 @@ status_t CedarXMetadataRetriever::setDataSource(
     	if(CDXRetriever_Create((void**)&mRetriever) != 0)
     	    return UNKNOWN_ERROR;
     	bCDXMetaRetriverInit = true;
-    	LOGV("CDXRetriever_Create called!");
+    	ALOGV("CDXRetriever_Create called!");
     }
 
     if(mRetriever->control(mRetriever, CDX_SET_DATASOURCE_URL, (unsigned int)url, 0) != 0){
@@ -90,7 +90,7 @@ status_t CedarXMetadataRetriever::setDataSource(
         int fd, int64_t offset, int64_t length) {
     fd = dup(fd);
 
-    LOGD("setDataSource(%d, %lld, %lld)", fd, offset, length);
+    ALOGD("setDataSource(%d, %lld, %lld)", fd, offset, length);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -101,7 +101,7 @@ status_t CedarXMetadataRetriever::setDataSource(
     	if(CDXRetriever_Create((void**)&mRetriever) != 0)
     		return UNKNOWN_ERROR;
     	bCDXMetaRetriverInit = true;
-    	LOGV("create mRetriver:%p",mRetriever);
+    	ALOGV("create mRetriver:%p",mRetriever);
     }
 
     CedarXExternFdDesc cdx_ext_fd;
@@ -119,7 +119,7 @@ status_t CedarXMetadataRetriever::setDataSource(
 
 VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
         int64_t timeUs, int option) {
-    LOGV("getFrameAtTime");
+    ALOGV("getFrameAtTime");
 
     VideoThumbnailInfo vd_thumb_info;
 
@@ -130,9 +130,9 @@ VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
     vd_thumb_info.require_height = 512;
     vd_thumb_info.capture_result = 0;
 
-    LOGV("CDX_CMD_CAPTURE_THUMBNAIL start");
+    ALOGV("CDX_CMD_CAPTURE_THUMBNAIL start");
     mRetriever->control(mRetriever, CDX_CMD_CAPTURE_THUMBNAIL, (unsigned int)(&vd_thumb_info), 0);
-    LOGV("CDX_CMD_CAPTURE_THUMBNAIL end ret: %d", vd_thumb_info.capture_result);
+    ALOGV("CDX_CMD_CAPTURE_THUMBNAIL end ret: %d", vd_thumb_info.capture_result);
     if(!vd_thumb_info.capture_result) {
     	mRetriever->control(mRetriever, CDX_CMD_CLOSE_CAPTURE, 0, 0);
     	return NULL;
@@ -173,7 +173,7 @@ VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
             frame->mHeight,
             0, 0, frame->mWidth - 1, frame->mHeight - 1);
 
-    LOGV("Thumbnail Info Size: %dX%d src addr:%p dst addr:%p size:%d",frame->mWidth,frame->mHeight,
+    ALOGV("Thumbnail Info Size: %dX%d src addr:%p dst addr:%p size:%d",frame->mWidth,frame->mHeight,
     		vd_thumb_info.thumb_stream_address,frame->mData,frame->mSize);
 
     mRetriever->control(mRetriever, CDX_CMD_CLOSE_CAPTURE, 0, 0);
@@ -182,10 +182,10 @@ VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
 }
 
 MediaAlbumArt *CedarXMetadataRetriever::extractAlbumArt() {
-    //LOGV("extractAlbumArt (extractor: %s)", mExtractor.get() != NULL ? "YES" : "NO");
+    //ALOGV("extractAlbumArt (extractor: %s)", mExtractor.get() != NULL ? "YES" : "NO");
 #ifdef __ANDROID_VERSION_2_3_1
     if (0 == (mMode & METADATA_MODE_METADATA_RETRIEVAL_ONLY)) {
-        LOGV("extractAlbumArt/metadata retrieval disabled by mode");
+        ALOGV("extractAlbumArt/metadata retrieval disabled by mode");
 
         return NULL;
     }
@@ -212,7 +212,7 @@ const char *CedarXMetadataRetriever::extractMetadata(int keyCode) {
 
 #ifdef __ANDROID_VERSION_2_3_1
     if (0 == (mMode & METADATA_MODE_METADATA_RETRIEVAL_ONLY)) {
-        LOGV("extractAlbumArt/metadata retrieval disabled by mode");
+        ALOGV("extractAlbumArt/metadata retrieval disabled by mode");
 
         return NULL;
     }
@@ -243,9 +243,9 @@ void CedarXMetadataRetriever::parseMetaData() {
     String8 s8;
     int     ret;
     
-	//LOGV("begin CDX_CMD_GET_METADATA mRetriever:%p",mRetriever);
+	//ALOGV("begin CDX_CMD_GET_METADATA mRetriever:%p",mRetriever);
     mRetriever->control(mRetriever, CDX_CMD_GET_METADATA, (unsigned int)&audio_metadata, 0);
-    LOGV("add meta data...");
+    ALOGV("add meta data...");
     
 //    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ulAudio_name, audio_metadata.ulAudio_name_sz,
 //                         audio_metadata.ulAudio_nameCharEncode, &s8 );
@@ -412,14 +412,14 @@ static int _IsUTF8Stream( const char* bytes, int size )
                  * Note: 1111 is valid for normal UTF-8, but not the
                  * modified UTF-8 used here.
                  */
-                LOGV("JNI WARNING: illegal start byte 0x%x\n", utf8);
+                ALOGV("JNI WARNING: illegal start byte 0x%x\n", utf8);
                 goto fail;
             }
             case 0x0e: {
                 // Bit pattern 1110, so there are two additional bytes.
                 utf8 = *(bytes++);
                 if ( bytes > end || (utf8 & 0xc0) != 0x80) {
-                    LOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
+                    ALOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
                     goto fail;
                 }
                 // Fall through to take care of the final byte.
@@ -429,7 +429,7 @@ static int _IsUTF8Stream( const char* bytes, int size )
                 // Bit pattern 110x, so there is one additional byte.
                 utf8 = *(bytes++);
                 if ( bytes > end || (utf8 & 0xc0) != 0x80) {
-                    LOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
+                    ALOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
                     goto fail;
                 }
                 break;
@@ -505,7 +505,7 @@ static int _Convert2UTF8( const uint8_t *src, size_t size, __a_audio_fonttype_e 
             buf = new uint8_t[buf_size];
             if( buf == NULL )
             {
-                LOGV("Fail in allocating memory with size %d.\n", buf_size);
+                ALOGV("Fail in allocating memory with size %d.\n", buf_size);
                 return -1;
             }
     
