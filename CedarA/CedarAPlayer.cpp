@@ -27,21 +27,29 @@
 #include <media/stagefright/MediaBuffer.h>
 #include <media/stagefright/MediaDefs.h>
 #include <media/stagefright/MediaExtractor.h>
-//#include <media/stagefright/MediaDebug.h>
-#include <media/stagefright/foundation/ADebug.h>
+
 #include <media/stagefright/MediaSource.h>
 #include <media/stagefright/MetaData.h>
-#ifdef __ANDROID_VERSION_2_3_4
-#include <media/stagefright/VideoRenderer.h>
-#include <gui/ISurface.h>
+
+#if (CEDARX_ANDROID_VERSION < 7)
+	#include <media/stagefright/MediaDebug.h>
+	#if (CEDARX_ANDROID_VERSION < 6)
+	#include <media/stagefright/VideoRenderer.h>
+	#include <surfaceflinger/ISurface.h>
+	#else
+	#include <surfaceflinger/Surface.h>
+	#include <gui/ISurfaceTexture.h>
+	#include <gui/SurfaceTextureClient.h>
+	#include <surfaceflinger/ISurfaceComposer.h>
+	#endif
 #else
-#include <gui/Surface.h>
 #include <gui/ISurfaceTexture.h>
 #include <gui/SurfaceTextureClient.h>
-#include <gui/ISurfaceComposer.h>
+#include <media/stagefright/foundation/ADebug.h>
 #endif
+
 #include <media/stagefright/foundation/ALooper.h>
-#include <OMX_IVCommon.h>
+//#include <OMX_IVCommon.h>
 
 #include "CedarAPlayer.h"
 
@@ -53,7 +61,7 @@ CedarAPlayer::CedarAPlayer() :
 	mQueueStarted(false),mAudioPlayer(NULL), mFlags(0), mExtractorFlags(0),
 	mSuspensionPositionUs(0){
 
-	ALOGV("Construction");
+	LOGV("Construction");
 	reset_l();
 
 	CDADecoder_Create((void**)&mPlayer);
@@ -71,17 +79,17 @@ CedarAPlayer::~CedarAPlayer() {
 	}
 
 	if (mAudioPlayer) {
-		ALOGV("delete mAudioPlayer");
+		LOGV("delete mAudioPlayer");
 		delete mAudioPlayer;
 		mAudioPlayer = NULL;
 	}
 
-	ALOGV("Deconstruction %x",mFlags);
+	LOGV("Deconstruction %x",mFlags);
 }
 
-#ifndef __ANDROID_VERSION_2_3_4
+#if (CEDARX_ANDROID_VERSION >= 6)
 void CedarAPlayer::setUID(uid_t uid) {
-    ALOGV("CedarXPlayer running on behalf of uid %d", uid);
+    LOGV("CedarXPlayer running on behalf of uid %d", uid);
 
     mUID = uid;
     mUIDValid = true;
@@ -96,24 +104,21 @@ void CedarAPlayer::setListener(const wp<MediaPlayerBase> &listener) {
 status_t CedarAPlayer::setDataSource(const char *uri, const KeyedVector<
 		String8, String8> *headers) {
 	//Mutex::Autolock autoLock(mLock);
-	ALOGV("CedarAPlayer::setDataSource (%s)", uri);
-	mPlayer->control(mPlayer, CDA_SET_DATASOURCE_URL, (unsigned int)uri, 0);
-
-	return OK;
+	LOGV("CedarAPlayer::setDataSource (%s)", uri);
+	return mPlayer->control(mPlayer, CDA_SET_DATASOURCE_URL, (unsigned int)uri, 0);
 }
 
 status_t CedarAPlayer::setDataSource(int fd, int64_t offset, int64_t length) {
 	//Mutex::Autolock autoLock(mLock);
-	ALOGV("CedarAPlayer::setDataSource fd");
+	LOGV("CedarAPlayer::setDataSource fd");
 	CedarAFdDesc ext_fd_desc;
 	ext_fd_desc.fd = fd;
 	ext_fd_desc.offset = offset;
 	ext_fd_desc.length = length;
-	mPlayer->control(mPlayer, CDA_SET_DATASOURCE_FD, (unsigned int)&ext_fd_desc, 0);
-	return OK;
+	return mPlayer->control(mPlayer, CDA_SET_DATASOURCE_FD, (unsigned int)&ext_fd_desc, 0);
 }
 
-#ifndef __ANDROID_VERSION_2_3_4
+#if (CEDARX_ANDROID_VERSION >= 6)
 status_t CedarAPlayer::setDataSource(const sp<IStreamSource> &source) {
     return INVALID_OPERATION;
 }
@@ -130,7 +135,7 @@ status_t CedarAPlayer::getParameter(int key, Parcel *reply) {
 
 void CedarAPlayer::reset() {
 	//Mutex::Autolock autoLock(mLock);
-	ALOGV("RESET ???????????????, context: %p",this);
+	LOGV("RESET ???????????????, context: %p",this);
 
 	if(mPlayer != NULL){
 		//mPlayer->control(mPlayer, CDA_CMD_RESET, 0, 0);
@@ -140,7 +145,7 @@ void CedarAPlayer::reset() {
 }
 
 void CedarAPlayer::reset_l() {
-	ALOGV("reset_l");
+	LOGV("reset_l");
 
 	mDurationUs = 0;
 	mFlags = 0;
@@ -164,7 +169,7 @@ void CedarAPlayer::notifyListener_l(int msg, int ext1, int ext2) {
 }
 
 status_t CedarAPlayer::play() {
-	ALOGV("CedarAPlayer::play()");
+	LOGV("CedarAPlayer::play()");
 	status_t ret = OK;
 
 	//Mutex::Autolock autoLock(mLock);
@@ -173,12 +178,12 @@ status_t CedarAPlayer::play() {
 
 	ret = play_l(CDA_CMD_PLAY);
 
-	ALOGV("CedarAPlayer::play() end");
+	LOGV("CedarAPlayer::play() end");
 	return ret;
 }
 
 status_t CedarAPlayer::play_l(int command) {
-	ALOGV("CedarAPlayer::play_l()");
+	LOGV("CedarAPlayer::play_l()");
 	if (mFlags & PLAYING) {
 		return OK;
 	}
@@ -189,8 +194,9 @@ status_t CedarAPlayer::play_l(int command) {
 		mAudioPlayer->resume();
 	}
 
-	if (!(mFlags & PAUSING)) {
-		ALOGV("CedarAPlayer::play_l start cedara...");
+	//if (!(mFlags & PAUSING)) {
+	if(1){
+		LOGV("CedarAPlayer::play_l start cedara...");
 		mPlayer->control(mPlayer, CDA_CMD_PLAY, (unsigned int)&mSuspensionPositionUs, 0);
 	}
 
@@ -200,7 +206,7 @@ status_t CedarAPlayer::play_l(int command) {
 }
 
 status_t CedarAPlayer::stop() {
-	ALOGV("CedarAPlayer::stop");
+	LOGV("CedarAPlayer::stop");
 
 	//mPlayer->control(mPlayer, CDA_CMD_STOP, 0, 0);
 	stop_l();
@@ -209,15 +215,15 @@ status_t CedarAPlayer::stop() {
 }
 
 status_t CedarAPlayer::stop_l() {
-	ALOGV("stop() status:%x", mFlags & PLAYING);
+	LOGV("stop() status:%x", mFlags & PLAYING);
 
-	ALOGV("MEDIA_PLAYBACK_COMPLETE");
+	LOGV("MEDIA_PLAYBACK_COMPLETE");
 	notifyListener_l(MEDIA_PLAYBACK_COMPLETE);
 
 	pause_l(true);
 
 	mFlags &= ~SUSPENDING;
-	ALOGV("stop finish 1...");
+	LOGV("stop finish 1...");
 
 	return OK;
 }
@@ -245,6 +251,7 @@ status_t CedarAPlayer::pause_l(bool at_eos) {
 			mAudioPlayer->pause();
 		}
 	}
+    mPlayer->control(mPlayer, CDA_CMD_PAUSE, 0, 0);
 
 	mFlags &= ~PLAYING;
 	mFlags |= PAUSING;
@@ -256,18 +263,21 @@ bool CedarAPlayer::isPlaying() const {
 	return (mFlags & PLAYING) || (mFlags & CACHE_UNDERRUN);
 }
 
-#ifdef __ANDROID_VERSION_2_3_4
+#if (CEDARX_ANDROID_VERSION < 6)
 void CedarAPlayer::setISurface(const sp<ISurface> &isurface) {
 	//Mutex::Autolock autoLock(mLock);
 	mISurface = isurface;
 }
 #else
+
+#if (CEDARX_ANDROID_VERSION < 7)
 status_t CedarAPlayer::setSurface(const sp<Surface> &surface) {
     //Mutex::Autolock autoLock(mLock);
 
     //mSurface = surface;
     return OK;
 }
+#endif
 
 status_t CedarAPlayer::setSurfaceTexture(const sp<ISurfaceTexture> &surfaceTexture) {
     //Mutex::Autolock autoLock(mLock);
@@ -321,10 +331,10 @@ status_t CedarAPlayer::seekTo(int64_t timeUs) {
 
 	int64_t currPositionUs;
 	mSeekNotificationSent = false;
-	ALOGV("seek cmd0 to %lldms", timeUs);
+	LOGV("seek cmd0 to %lldms", timeUs);
 
 	if (!(mFlags & PLAYING) || mSeeking || (mFlags & AT_EOS)) {
-		ALOGV( "seeking while paused or is seeking, sending SEEK_COMPLETE notification"
+		LOGV( "seeking while paused or is seeking, sending SEEK_COMPLETE notification"
 					" immediately.");
 
 		notifyListener_l(MEDIA_SEEK_COMPLETE);
@@ -343,22 +353,22 @@ status_t CedarAPlayer::seekTo(int64_t timeUs) {
 		}
 		mSeeking = false;
 		if (!mSeekNotificationSent) {
-			ALOGV("MEDIA_SEEK_COMPLETE return");
+			LOGV("MEDIA_SEEK_COMPLETE return");
 			notifyListener_l(MEDIA_SEEK_COMPLETE);
 			mSeekNotificationSent = true;
 		}
 	}
 
-	ALOGV("--------- seek cmd1 to %lldms end -----------", timeUs);
+	LOGV("--------- seek cmd1 to %lldms end -----------", timeUs);
 
 	return OK;
 }
 
 void CedarAPlayer::finishAsyncPrepare_l(int err){
 
-	ALOGV("finishAsyncPrepare_l");
+	LOGV("finishAsyncPrepare_l");
 	if(err == -1){
-		ALOGE("CedarAPlayer:prepare error!");
+		LOGE("CedarAPlayer:prepare error!");
 		abortPrepare(UNKNOWN_ERROR);
 		return;
 	}
@@ -375,14 +385,14 @@ void CedarAPlayer::finishAsyncPrepare_l(int err){
 
 void CedarAPlayer::finishSeek_l(int err){
 
-	ALOGV("finishSeek_l");
+	LOGV("finishSeek_l");
 
 	if(mAudioPlayer){
 		mAudioPlayer->seekTo(0);
 	}
 	mSeeking = false;
 	if (!mSeekNotificationSent) {
-		ALOGV("MEDIA_SEEK_COMPLETE return");
+		LOGV("MEDIA_SEEK_COMPLETE return");
 		notifyListener_l(MEDIA_SEEK_COMPLETE);
 		mSeekNotificationSent = true;
 	}
@@ -397,7 +407,7 @@ status_t CedarAPlayer::prepare_l() {
 }
 
 status_t CedarAPlayer::prepareAsync() {
-	ALOGV("prepare Async");
+	LOGV("prepare Async");
 	//Mutex::Autolock autoLock(mLock);
 	if (mFlags & PREPARING) {
 		return UNKNOWN_ERROR; // async prepare already pending
@@ -415,7 +425,7 @@ status_t CedarAPlayer::prepareAsync() {
 
 status_t CedarAPlayer::prepare() {
 	//Mutex::Autolock autoLock(mLock);
-	ALOGV("prepare");
+	LOGV("prepare");
 	mIsAsyncPrepare = false;
 
 	if(mPlayer->control(mPlayer, CDA_CMD_PREPARE, 0, 0) != 0){
@@ -439,7 +449,7 @@ void CedarAPlayer::abortPrepare(status_t err) {
 }
 
 status_t CedarAPlayer::suspend() {
-	ALOGV("suspend 0");
+	LOGV("suspend 0");
 
 	if (mFlags & SUSPENDING)
 		return OK;
@@ -448,13 +458,13 @@ status_t CedarAPlayer::suspend() {
 
 	mFlags |= SUSPENDING;
 
-	ALOGV("suspend 2");
+	LOGV("suspend 2");
 
 	return OK;
 }
 
 status_t CedarAPlayer::resume() {
-	ALOGV("resume");
+	LOGV("resume");
 
 
 	mSuspensionPositionUs = 0;
@@ -478,7 +488,7 @@ int CedarAPlayer::StagefrightAudioRenderInit(int samplerate, int channels, int f
 		if (mAudioSink != NULL) {
 			mAudioPlayer = new CedarAAudioPlayer(mAudioSink, this);
 			//mAudioPlayer->setSource(mAudioSource);
-			ALOGV("set audio format: (%d : %d)", samplerate, channels);
+			LOGV("set audio format: (%d : %d)", samplerate, channels);
 			mAudioPlayer->setFormat(samplerate, channels);
 
 			status_t err = mAudioPlayer->start(true /* sourceAlreadyStarted */);
@@ -526,7 +536,7 @@ int CedarAPlayer::CedarAPlayerCallback(int event, void *info)
 	int ret = 0;
 	int *para = (int*)info;
 
-	//ALOGV("----------CedarAPlayerCallback event:%d info:%p\n", event, info);
+	//LOGV("----------CedarAPlayerCallback event:%d info:%p\n", event, info);
 
 	switch (event) {
 	case CDA_EVENT_PLAYBACK_COMPLETE:

@@ -27,8 +27,11 @@
 typedef enum CEDARX_SOURCETYPE{
 	CEDARX_SOURCE_FD,
 	CEDARX_SOURCE_FILEPATH,
-	CEDARX_SOURCE_M3UBUFFER,
+	CEDARX_SOURCE_M3U8,
 	CEDARX_SOURCE_DRAMBUFFER,
+	CEDARX_SOURCE_SFT_STREAM, //for ics
+	CEDARX_SOURCE_NORMAL_STREAM,
+	CEDARX_SOURCE_WRITER_CALLBACK, //for recoder writer
 }CEDARX_SOURCETYPE;
 
 typedef enum MEDIA_3DMODE_TYPE{
@@ -38,6 +41,7 @@ typedef enum MEDIA_3DMODE_TYPE{
 }MEDIA_3DMODE_TYPE;
 
 typedef struct CedarXDataSourceDesc{
+	CEDARX_THIRDPART_STREAMTYPE thirdpart_stream_type;
 	CEDARX_STREAMTYPE stream_type;
 	CEDARX_SOURCETYPE source_type;
 	CEDARX_MEDIA_TYPE media_type;
@@ -52,9 +56,18 @@ typedef struct CedarXDataSourceDesc{
 	char *source_url; //SetDataSource url
 	CedarXExternFdDesc ext_fd_desc;
 
+	void *url_headers;
+	void *sft_stream_handle;
+	void *sft_cached_source2;
+	void *sft_http_source;
+	CDX_S64 sft_stream_length;
+
 	int  demux_type;
+	int  httplive_use_mplayer;
 
 	int  mp_stream_cache_size; //unit KByte used for mplayer cache size setting
+	char* bd_source_url;
+    int   playBDFile;
 }CedarXDataSourceDesc;
 
 typedef enum CDX_AUDIO_CODEC_TYPE {

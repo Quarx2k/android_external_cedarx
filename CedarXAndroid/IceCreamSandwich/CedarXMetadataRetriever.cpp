@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-//#define LOG_NDEBUG 0
+//#include <CDX_LogNDebug.h>
 #define LOG_TAG "CedarXMetadataRetriever"
-#include <utils/Log.h>
+#include <CDX_Debug.h>
 
 #include "CedarXMetadataRetriever.h"
 
 #include <media/stagefright/ColorConverter.h>
 #include <media/stagefright/DataSource.h>
 #include <media/stagefright/FileSource.h>
-//#include <media/stagefright/MediaDebug.h>
+#if (CEDARX_ANDROID_VERSION < 7)
+#include <media/stagefright/MediaDebug.h>
+#else
 #include <media/stagefright/foundation/ADebug.h>
+#endif
 #include <media/stagefright/MediaExtractor.h>
 #include <media/stagefright/MetaData.h>
 #include <media/stagefright/OMXCodec.h>
 #include <byteswap.h>
 
 #include <CDX_PlayerAPI.h>
+#include <CDX_UglyDef.h>
 #include <stdio.h>
 
 namespace android {
@@ -44,14 +48,14 @@ CedarXMetadataRetriever::CedarXMetadataRetriever()
     : bCDXMetaRetriverInit(false),
       mParsedMetaData(false),
       mAlbumArt(NULL) {
-    ALOGV("CedarXMetadataRetriever()");
+    LOGV("CedarXMetadataRetriever()");
 }
 
 CedarXMetadataRetriever::~CedarXMetadataRetriever() {
-    ALOGV("~CedarXMetadataRetriever()");
+    LOGV("~CedarXMetadataRetriever()");
 
     if(bCDXMetaRetriverInit){
-    	ALOGV("CDXRetriever_Destroy called!");
+    	LOGV("CDXRetriever_Destroy called!");
         CDXRetriever_Destroy(mRetriever);
         bCDXMetaRetriverInit = false;
     }
@@ -62,7 +66,7 @@ CedarXMetadataRetriever::~CedarXMetadataRetriever() {
 status_t CedarXMetadataRetriever::setDataSource(
         const char *url,
         const KeyedVector<String8, String8> *headers){
-    ALOGD("setDataSource(%s)", url);
+    LOGD("setDataSource(%s)", url);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -73,7 +77,7 @@ status_t CedarXMetadataRetriever::setDataSource(
     	if(CDXRetriever_Create((void**)&mRetriever) != 0)
     	    return UNKNOWN_ERROR;
     	bCDXMetaRetriverInit = true;
-    	ALOGV("CDXRetriever_Create called!");
+    	LOGV("CDXRetriever_Create called!");
     }
 
     if(mRetriever->control(mRetriever, CDX_SET_DATASOURCE_URL, (unsigned int)url, 0) != 0){
@@ -90,7 +94,7 @@ status_t CedarXMetadataRetriever::setDataSource(
         int fd, int64_t offset, int64_t length) {
     fd = dup(fd);
 
-    ALOGD("setDataSource(%d, %lld, %lld)", fd, offset, length);
+    LOGD("setDataSource(%d, %lld, %lld)", fd, offset, length);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -101,7 +105,7 @@ status_t CedarXMetadataRetriever::setDataSource(
     	if(CDXRetriever_Create((void**)&mRetriever) != 0)
     		return UNKNOWN_ERROR;
     	bCDXMetaRetriverInit = true;
-    	ALOGV("create mRetriver:%p",mRetriever);
+    	LOGV("create mRetriver:%p",mRetriever);
     }
 
     CedarXExternFdDesc cdx_ext_fd;
@@ -119,20 +123,20 @@ status_t CedarXMetadataRetriever::setDataSource(
 
 VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
         int64_t timeUs, int option) {
-    ALOGV("getFrameAtTime");
+    LOGV("getFrameAtTime");
 
     VideoThumbnailInfo vd_thumb_info;
 
     memset(&vd_thumb_info, 0, sizeof(VideoThumbnailInfo));
     vd_thumb_info.format = VIDEO_THUMB_YUVPLANNER; //0: JPEG STREAM  1: YUV RAW STREAM
-    vd_thumb_info.capture_time = 20*1000;
+    vd_thumb_info.capture_time = 18*1000;
     vd_thumb_info.require_width = 512;
     vd_thumb_info.require_height = 512;
     vd_thumb_info.capture_result = 0;
 
-    ALOGV("CDX_CMD_CAPTURE_THUMBNAIL start");
+    LOGV("CDX_CMD_CAPTURE_THUMBNAIL start");
     mRetriever->control(mRetriever, CDX_CMD_CAPTURE_THUMBNAIL, (unsigned int)(&vd_thumb_info), 0);
-    ALOGV("CDX_CMD_CAPTURE_THUMBNAIL end ret: %d", vd_thumb_info.capture_result);
+    LOGV("CDX_CMD_CAPTURE_THUMBNAIL end ret: %d", vd_thumb_info.capture_result);
     if(!vd_thumb_info.capture_result) {
     	mRetriever->control(mRetriever, CDX_CMD_CLOSE_CAPTURE, 0, 0);
     	return NULL;
@@ -173,7 +177,7 @@ VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
             frame->mHeight,
             0, 0, frame->mWidth - 1, frame->mHeight - 1);
 
-    ALOGV("Thumbnail Info Size: %dX%d src addr:%p dst addr:%p size:%d",frame->mWidth,frame->mHeight,
+    LOGV("Thumbnail Info Size: %dX%d src addr:%p dst addr:%p size:%d",frame->mWidth,frame->mHeight,
     		vd_thumb_info.thumb_stream_address,frame->mData,frame->mSize);
 
     mRetriever->control(mRetriever, CDX_CMD_CLOSE_CAPTURE, 0, 0);
@@ -182,10 +186,10 @@ VideoFrame *CedarXMetadataRetriever::getFrameAtTime(
 }
 
 MediaAlbumArt *CedarXMetadataRetriever::extractAlbumArt() {
-    //ALOGV("extractAlbumArt (extractor: %s)", mExtractor.get() != NULL ? "YES" : "NO");
+    //LOGV("extractAlbumArt (extractor: %s)", mExtractor.get() != NULL ? "YES" : "NO");
 #ifdef __ANDROID_VERSION_2_3_1
     if (0 == (mMode & METADATA_MODE_METADATA_RETRIEVAL_ONLY)) {
-        ALOGV("extractAlbumArt/metadata retrieval disabled by mode");
+        LOGV("extractAlbumArt/metadata retrieval disabled by mode");
 
         return NULL;
     }
@@ -212,7 +216,7 @@ const char *CedarXMetadataRetriever::extractMetadata(int keyCode) {
 
 #ifdef __ANDROID_VERSION_2_3_1
     if (0 == (mMode & METADATA_MODE_METADATA_RETRIEVAL_ONLY)) {
-        ALOGV("extractAlbumArt/metadata retrieval disabled by mode");
+        LOGV("extractAlbumArt/metadata retrieval disabled by mode");
 
         return NULL;
     }
@@ -238,66 +242,108 @@ const char *CedarXMetadataRetriever::extractMetadata(int keyCode) {
 }
 
 void CedarXMetadataRetriever::parseMetaData() {
-	audio_file_info_t audio_metadata;
+	CedarXMetaData cdx_metadata;
+	audio_file_info_t *audio_metadata = &cdx_metadata.audio_metadata;
     /* modified by Gary. start {{----------------------------------- */
     String8 s8;
     int     ret;
     
-	//ALOGV("begin CDX_CMD_GET_METADATA mRetriever:%p",mRetriever);
-    mRetriever->control(mRetriever, CDX_CMD_GET_METADATA, (unsigned int)&audio_metadata, 0);
-    ALOGV("add meta data...");
-    
-//    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ulAudio_name, audio_metadata.ulAudio_name_sz,
-//                         audio_metadata.ulAudio_nameCharEncode, &s8 );
-//    if( ret == 0 )
-//    {
-//      	mMetaData.add(METADATA_KEY_MIMETYPE, s8);
-//    }
-    
-    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ulauthor, audio_metadata.ulauthor_sz,
-                         audio_metadata.ulauthorCharEncode, &s8 );
-    if( ret == 0 )
-    {
-       	mMetaData.add(METADATA_KEY_ARTIST, s8);
-       	mMetaData.add(METADATA_KEY_ALBUMARTIST, s8);
-       	mMetaData.add(METADATA_KEY_AUTHOR, s8);
-    	mMetaData.add(METADATA_KEY_WRITER, s8);
-    }
-    
-    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ulGenre, audio_metadata.ulGenre_sz,
-                         audio_metadata.ulGenreCharEncode, &s8 );
-    if( ret == 0 )
-    {
-      	mMetaData.add(METADATA_KEY_GENRE, s8);
-    }
-    
-    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ultitle, audio_metadata.ultitle_sz,
-                         audio_metadata.ultitleCharEncode, &s8 );
-    if( ret == 0 )
-    {
-      	mMetaData.add(METADATA_KEY_TITLE, s8);
-    }
-    
-    ret = _Convert2UTF8( (uint8_t *)audio_metadata.ulYear, audio_metadata.ulYear_sz,
-                         audio_metadata.ulYearCharEncode, &s8 );
-    if( ret == 0 )
-    {
-      	mMetaData.add(METADATA_KEY_YEAR, s8);
-    }
+    memset(&cdx_metadata, 0,sizeof(CedarXMetaData));
 
-	if( audio_metadata.ulDuration > 0 )
-	{
-		char   *str = NULL;
+	//LOGV("begin CDX_CMD_GET_METADATA mRetriever:%p",mRetriever);
+    mRetriever->control(mRetriever, CDX_CMD_GET_METADATA, (unsigned int)&cdx_metadata, 0);
+    LOGV("add meta data...");
 
-		str = new char[32];
-		if( str != NULL )
+    if(cdx_metadata.cdx_metadata_type == CDX_METADATA_TYPE_AUDIO) {
+	//    ret = _Convert2UTF8( (uint8_t *)audio_metadata->ulAudio_name, audio_metadata->ulAudio_name_sz,
+	//                         audio_metadata->ulAudio_nameCharEncode, &s8 );
+	//    if( ret == 0 )
+	//    {
+	//      	mMetaData.add(METADATA_KEY_MIMETYPE, s8);
+	//    }
+
+		ret = _Convert2UTF8( (uint8_t *)audio_metadata->ulauthor, audio_metadata->ulauthor_sz,
+							 audio_metadata->ulauthorCharEncode, &s8 );
+		if( ret == 0 )
 		{
-			sprintf( str, "%d", audio_metadata.ulDuration);
-			mMetaData.add(METADATA_KEY_DURATION, String8(str));
-			delete[] str;
+			mMetaData.add(METADATA_KEY_ARTIST, s8);
+			mMetaData.add(METADATA_KEY_ALBUMARTIST, s8);
+			mMetaData.add(METADATA_KEY_AUTHOR, s8);
+			mMetaData.add(METADATA_KEY_WRITER, s8);
 		}
-	}
-    /* modified by Gary. end   -----------------------------------}} */
+
+		ret = _Convert2UTF8( (uint8_t *)audio_metadata->ulGenre, audio_metadata->ulGenre_sz,
+							 audio_metadata->ulGenreCharEncode, &s8 );
+		if( ret == 0 )
+		{
+			mMetaData.add(METADATA_KEY_GENRE, s8);
+		}
+
+		ret = _Convert2UTF8( (uint8_t *)audio_metadata->ultitle, audio_metadata->ultitle_sz,
+							 audio_metadata->ultitleCharEncode, &s8 );
+		if( ret == 0 )
+		{
+			mMetaData.add(METADATA_KEY_TITLE, s8);
+		}
+		ret = _Convert2UTF8( (uint8_t *)audio_metadata->ulAlbum, audio_metadata->ulAlbum_sz,
+							 audio_metadata->ulAlbumCharEncode, &s8 );
+		if( ret == 0 )
+		{
+			mMetaData.add(METADATA_KEY_ALBUM, s8);
+		}
+
+		ret = _Convert2UTF8( (uint8_t *)audio_metadata->ulYear, audio_metadata->ulYear_sz,
+							 audio_metadata->ulYearCharEncode, &s8 );
+		if( ret == 0 )
+		{
+			mMetaData.add(METADATA_KEY_YEAR, s8);
+		}
+
+		if( audio_metadata->ulDuration > 0 )
+		{
+			char   *str = NULL;
+
+			str = new char[32];
+			if( str != NULL )
+			{
+				sprintf( str, "%d", audio_metadata->ulDuration);
+				mMetaData.add(METADATA_KEY_DURATION, String8(str));
+				delete[] str;
+			}
+		}
+		/* modified by Gary. end   -----------------------------------}} */
+    }
+    else {
+    	char str[32];
+
+    	if(cdx_metadata.geo_len > 0) {
+			String8 s8_geo;
+			s8_geo = cdx_metadata.geo_data;
+			LOGV("geo_data:%s", cdx_metadata.geo_data);
+			mMetaData.add(METADATA_KEY_LOCATION, s8_geo);
+		}
+
+    	if(cdx_metadata.duration > 0)
+		{
+			sprintf(str, "%d", cdx_metadata.duration);
+			LOGV("METADATA_KEY_DURATION:%d", cdx_metadata.duration);
+			mMetaData.add(METADATA_KEY_DURATION, String8(str));
+		}
+
+    	if(cdx_metadata.width > 0)
+		{
+			sprintf(str, "%d", cdx_metadata.width);
+			LOGV("METADATA_KEY_VIDEO_WIDTH:%d", cdx_metadata.duration);
+			mMetaData.add(METADATA_KEY_VIDEO_WIDTH, String8(str));
+		}
+
+    	if(cdx_metadata.height > 0)
+		{
+			sprintf(str, "%d", cdx_metadata.height);
+			LOGV("METADATA_KEY_VIDEO_HEIGHT:%d", cdx_metadata.duration);
+			mMetaData.add(METADATA_KEY_VIDEO_HEIGHT, String8(str));
+		}
+    }
     
 //    { kKeyMIMEType, METADATA_KEY_MIMETYPE },//ulAudio_name_sz
 //    { kKeyCDTrackNumber, METADATA_KEY_CD_TRACK_NUMBER },
@@ -412,14 +458,14 @@ static int _IsUTF8Stream( const char* bytes, int size )
                  * Note: 1111 is valid for normal UTF-8, but not the
                  * modified UTF-8 used here.
                  */
-                ALOGV("JNI WARNING: illegal start byte 0x%x\n", utf8);
+                LOGV("JNI WARNING: illegal start byte 0x%x\n", utf8);
                 goto fail;
             }
             case 0x0e: {
                 // Bit pattern 1110, so there are two additional bytes.
                 utf8 = *(bytes++);
                 if ( bytes > end || (utf8 & 0xc0) != 0x80) {
-                    ALOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
+                    LOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
                     goto fail;
                 }
                 // Fall through to take care of the final byte.
@@ -429,7 +475,7 @@ static int _IsUTF8Stream( const char* bytes, int size )
                 // Bit pattern 110x, so there is one additional byte.
                 utf8 = *(bytes++);
                 if ( bytes > end || (utf8 & 0xc0) != 0x80) {
-                    ALOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
+                    LOGV("JNI WARNING: illegal continuation byte 0x%x\n", utf8);
                     goto fail;
                 }
                 break;
@@ -505,7 +551,7 @@ static int _Convert2UTF8( const uint8_t *src, size_t size, __a_audio_fonttype_e 
             buf = new uint8_t[buf_size];
             if( buf == NULL )
             {
-                ALOGV("Fail in allocating memory with size %d.\n", buf_size);
+                LOGV("Fail in allocating memory with size %d.\n", buf_size);
                 return -1;
             }
     

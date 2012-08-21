@@ -31,7 +31,8 @@ extern "C" {
         CEDARV_STREAM_FORMAT_VC1,
         CEDARV_STREAM_FORMAT_AVS,
         CEDARV_STREAM_FORMAT_MJPEG,  
-        CEDARV_STREAM_FORMAT_VP8
+        CEDARV_STREAM_FORMAT_VP8,
+        CEDARV_STREAM_FORMAT_NETWORK
     }cedarv_stream_format_e;
     
     typedef enum CEDARV_SUB_FORMAT
@@ -48,7 +49,9 @@ extern "C" {
         CEDARV_MPEG4_SUB_FORMAT_RMG2,		//* H263 coded video stream muxed in '.rm' file.
         CEDARV_MPEG4_SUB_FORMAT_VP6,
         CEDARV_MPEG4_SUB_FORMAT_WMV1,
-        CEDARV_MPEG4_SUB_FORMAT_WMV2
+        CEDARV_MPEG4_SUB_FORMAT_WMV2,
+        CEDARV_MPEG4_SUB_FORMAT_DIVX2,		//MSMPEG4V2
+        CEDARV_MPEG4_SUB_FORMAT_DIVX1,		//MSMPEG4V1
     }cedarv_sub_format_e;
     
     typedef enum CEDARV_CONTAINER_FORMAT
@@ -66,6 +69,7 @@ extern "C" {
     	CEDARV_CONTAINER_FORMAT_TS,
     	CEDARV_CONTAINER_FORMAT_VOB,
     	CEDARV_CONTAINER_FORMAT_WEBM,
+    	CEDARV_CONTAINER_FORMAT_OGM,
     }cedarv_container_format_e;
 
 	typedef enum CEDARV_3D_MODE
@@ -121,6 +125,7 @@ extern "C" {
     #define CEDARV_FLAG_FIRST_PART  		0x8
     #define CEDARV_FLAG_LAST_PART   		0x10
 	#define CEDARV_FLAG_MPEG4_EMPTY_FRAME	0x20
+	#define CEDARV_FLAG_DECODE_NO_DELAY     0x40000000
     #define CEDARV_FLAG_DATA_INVALID 		0x80000000
     
     typedef struct CEDARV_STREAM_DATA_INFORMATION
@@ -128,6 +133,7 @@ extern "C" {
         u32 flags;
         u32 lengh;
         u64 pts;
+        u32	type;
     }cedarv_stream_data_info_t;
     
     
@@ -154,6 +160,7 @@ extern "C" {
         CEDARV_PIXEL_FORMAT_AW_YUV411  = 0x12
     }cedarv_pixel_format_e;
     
+	#define CEDARV_PICT_PROP_NO_SYNC   0x1
         
     typedef struct CEDARV_PICTURE_INFORMATION
     {
@@ -173,6 +180,7 @@ extern "C" {
         u8                      vertical_scale_ratio;   //* what ratio this picture has been scaled down at vetical size, 0: 1/1, 1: 1/2, 2: 1/4, 3: 1/8;
         u32                     frame_rate;             //* frame_rate, multiplied by 1000;
         u32                     aspect_ratio;           //* pixel width to pixel height ratio, multiplied by 1000;
+        u32                     pict_prop;              //* picture property flags
         u8                      is_progressive;         //* progressive or interlace picture;
         u8                      top_field_first;        //* display top field first;
         u8                      repeat_top_field;       //* if interlace picture, whether repeat the top field when display;
@@ -206,6 +214,10 @@ extern "C" {
 
         u32						display_3d_mode;		//* this value has nothing to do with decoder, it is used for video render to
         												//* pass display mode to overlay module.
+        u32                     flag_addr;//dit maf flag address
+        u32                     flag_stride;//dit maf flag line stride
+        u8                      maf_valid;
+        u8                      pre_frame_valid;
     }cedarv_picture_t;
     
     typedef enum CEDARV_RESULT
@@ -245,6 +257,7 @@ extern "C" {
         CEDARV_COMMAND_ROTATE,
         CEDARV_COMMAND_SET_TOTALMEMSIZE,
 
+        CEDARV_COMMAND_DROP_B_FRAME,
         CEDARV_COMMAND_DISABLE_3D,
         CEDARV_COMMAN_SET_SYS_TIME,
         //* for preview application.
@@ -270,7 +283,10 @@ extern "C" {
         CEDARV_COMMAND_CLOSE_ANAGLATH_TRANSFROM,	//* close ve anaglath transformation
         CEDARV_COMMAND_GET_CHIP_VERSION,
 
-        CEDARV_COMMAND_FLUSH
+        CEDARV_COMMAND_FLUSH,
+        CEDARV_COMMAND_CLOSE_MAF,
+        CEDARV_COMMAND_SET_DEMUX_TYPE,
+        CEDARV_COMMAND_DECODE_NO_DELAY,
     }cedarv_io_cmd_e;
     
     
@@ -318,7 +334,6 @@ extern "C" {
 cedarv_decoder_t* libcedarv_init(s32 *ret);
 s32 libcedarv_exit(cedarv_decoder_t* p);
 
-void libcedarv_free_vbs_buffer_sem(void);
 
 #endif
 

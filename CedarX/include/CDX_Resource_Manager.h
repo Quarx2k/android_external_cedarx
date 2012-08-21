@@ -20,6 +20,7 @@ typedef enum CEDARX_HARDWARE_RETURN
 	CEDARV_REQ_RETURN_SKIP_WAIT = -2,
 	CEDARV_REQ_RETURN_FAIL = -1,
 	CEDARV_REQ_RETURN_OK = 0,
+	CEDARV_REQ_RETURN_DIFF_CTX = 1
 }CEDARX_HARDWARE_RETURN;
 
 typedef enum RESOURCE_MANAGER_TYPE{
@@ -43,6 +44,9 @@ typedef struct _CEDARV_REQUEST_CONTEXT
 
 int RequestCedarVResource(CEDARV_REQUEST_CONTEXT *req_ctx);
 int ReleaseCedarVResource(CEDARV_REQUEST_CONTEXT *req_ctx);
+int RequestCedarVFrameLevel(CEDARV_REQUEST_CONTEXT *request_ctx);
+int ReleaseCedarVFrameLevel(CEDARV_REQUEST_CONTEXT *req_ctx);
+void CedarVMayReset();
 
 #ifdef __cplusplus
 }

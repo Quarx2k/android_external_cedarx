@@ -32,6 +32,8 @@
 
 #include <CDX_PlayerAPI.h>
 
+#include <include_sft/NuPlayerSource.h>
+
 namespace android {
 
 struct CedarXAudioPlayer;
@@ -43,6 +45,7 @@ struct NuCachedSource2;
 struct ISurfaceTexture;
 
 struct ALooper;
+struct AwesomePlayer;
 
 struct CedarXRenderer : public RefBase {
     CedarXRenderer() {}
@@ -76,8 +79,17 @@ enum {
     NATIVE_SUSPENDING   = 0x20000,
 };
 
+enum {
+	SOURCETYPE_URL = 0,
+	SOURCETYPE_FD ,
+	SOURCETYPE_SFT_STREAM
+};
+
 typedef struct CedarXPlayerExtendMember_{
-	int xxxx;
+	int64_t mLastGetPositionTimeUs;
+	int64_t mLastPositionUs;
+	int32_t mOutputSetting;
+	int32_t mUseHardwareLayer;
 }CedarXPlayerExtendMember;
 
 struct CedarXPlayer { //don't touch this struct any more, you can extend members in CedarXPlayerExtendMember
@@ -169,7 +181,10 @@ struct CedarXPlayer { //don't touch this struct any more, you can extend members
     status_t setChromaSharp(int value);
     status_t setWhiteExtend(int value);
     status_t setBlackExtend(int value);
+    status_t setChannelMuteMode(int muteMode);
+    int getChannelMuteMode();
     status_t extensionControl(int command, int para0, int para1);
+    status_t generalInterface(int cmd, int int1, int int2, int int3, void *p);
 #endif
     // This is a mask of MediaExtractor::Flags.
     uint32_t flags() const;
@@ -182,9 +197,11 @@ private:
     friend struct CedarXEvent;
 
     mutable Mutex mLock;
+    mutable Mutex mLockNativeWindow;
     Mutex mMiscStateLock;
 
     CDXPlayer *mPlayer;
+    AwesomePlayer *mAwesomePlayer;
     int mStreamType;
 
     bool mQueueStarted;
@@ -197,11 +214,13 @@ private:
     sp<MediaPlayerBase::AudioSink> mAudioSink;
 
     String8 mUri;
-    bool mIsUri;
+    int mSourceType;
     KeyedVector<String8, String8> mUriHeaders;
 
     sp<CedarXRenderer> mVideoRenderer;
     bool mVideoRendererIsPreview;
+
+    sp<Source> mSftSource;
 
     CedarXMediaInformations mMediaInfo;
     CedarXAudioPlayer *mAudioPlayer;
@@ -227,7 +246,7 @@ private:
     int64_t mTimeSourceDeltaUs;
     int64_t mVideoTimeUs;
 
-    bool mTagPlay;
+    int  mTagPlay; //0: none 1:first TagePlay 2: Seeding TagPlay
     bool mSeeking;
     bool mSeekNotificationSent;
     int64_t mSeekTimeUs;

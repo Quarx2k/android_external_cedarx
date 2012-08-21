@@ -28,9 +28,9 @@
 #define DISPLAY_TIME_DELAY          (0x0000)        //delay 0 us
 #define FRM_SHOW_LOW_THRESHOLD      (10)            //low threshold is -10ms
 #define FRM_SHOW_HIGH_THRESHOLD     (20)            //high threshold is 20ms
-#define FRM_SHOW_SCALE_CNT          (3)             //Ò»Ö¡µÄÏÔÊ¾Ê±¼äµÄµÈ·ÖÊý
-#define FRM_SHOW_SCALE_LOW          (1)             //low_thresholdµÄÊ±¼ä±È£¬ÒÔFRM_SHOW_SCALE_CNTÎª·ÖÄ¸
-#define FRM_SHOW_SCALE_HIGH         (2)             //high_thresholdµÄÊ±¼ä±È
+#define FRM_SHOW_SCALE_CNT          (3)             //Ò»Ö¡ï¿½ï¿½ï¿½ï¿½Ê¾Ê±ï¿½ï¿½ÄµÈ·ï¿½ï¿½ï¿½
+#define FRM_SHOW_SCALE_LOW          (1)             //low_thresholdï¿½ï¿½Ê±ï¿½ï¿½È£ï¿½ï¿½ï¿½FRM_SHOW_SCALE_CNTÎªï¿½ï¿½Ä¸
+#define FRM_SHOW_SCALE_HIGH         (2)             //high_thresholdï¿½ï¿½Ê±ï¿½ï¿½ï¿½
 
 #define CEDAR_TAG_INF_SIZE  (256)
 
@@ -256,7 +256,7 @@ typedef struct VIDEO_CODEC_FORMAT
 
     u16       width;              // picture width
     u16       height;             // picture height
-    u32       frame_rate;         // frame rate, ÊýÖµ·Å´ó1000±¶¡£
+    u32       frame_rate;         // frame rate, ï¿½ï¿½Öµï¿½Å´ï¿½1000ï¿½ï¿½ï¿½ï¿½
     u32       mic_sec_per_frm;    // frame duration
 
     s32       avg_bit_rate;       // average bit rate
@@ -420,15 +420,15 @@ typedef enum __AVS_DRIVER_COMMAND
     DRV_AVS_CMD_GET_AUD_CACHE_TIME, // get audio cache time for skip video frame
     DRV_AVS_CMD_SET_FORCE_SYNC,     // set force sync, need adjust video clock
     DRV_AVS_CMD_CHK_AUDIO_PLAY_END, // check if all audio sample has play end
-//    DRV_AVS_CMD_SET_WAIT_FLG,  //ÉèÖÃÒªÇóµÈ´ýµÄ±ê¼Ç,Ä¿Ç°ÊÇaudio playbackÄ£¿éÉè,video playbackÄ£¿é²é.aux = 1(µÈ),0(²»ÓÃµÈ)
-//    DRV_AVS_CMD_GET_WAIT_FLG, //²éÑ¯audio playbackÄ£¿éÊÇ·ñÔÝÍ£
+//    DRV_AVS_CMD_SET_WAIT_FLG,  //ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½È´ï¿½Ä±ï¿½ï¿½,Ä¿Ç°ï¿½ï¿½audio playbackÄ£ï¿½ï¿½ï¿½ï¿½,video playbackÄ£ï¿½ï¿½ï¿½.aux = 1(ï¿½ï¿½),0(ï¿½ï¿½ï¿½Ãµï¿½)
+//    DRV_AVS_CMD_GET_WAIT_FLG, //ï¿½ï¿½Ñ¯audio playbackÄ£ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Í£
     
     DRV_AVS_CMD_SET_AV_END_FLAG=0x60,   // set audio or video end flag
     DRV_AVS_CMD_GET_AV_END_FLAG,        // get audio or video end flag
     DRV_AVS_CMD_SET_FFRR_FLAG,          // set flag if ff/rr is allowed
     DRV_AVS_CMD_GET_FFRR_FLAG,          // get flag if ff/rr is allowed
-    DRV_AVS_CMD_GET_AUDIO_CACHE_STAT,   // ²éÑ¯dac bufferÖÐµÄaudioÊý¾ÝµÄÊýÁ¿Çé¿ö£¬
-                                        //ret = 1:bufferÖÐµÄaudio_data³ä×ã;0:audio_data¿ìÃ»ÓÐÁË¡£
+    DRV_AVS_CMD_GET_AUDIO_CACHE_STAT,   // ï¿½ï¿½Ñ¯dac bufferï¿½Ðµï¿½audioï¿½ï¿½Ýµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                                        //ret = 1:bufferï¿½Ðµï¿½audio_dataï¿½ï¿½ï¿½ï¿½;0:audio_dataï¿½ï¿½Ã»ï¿½ï¿½ï¿½Ë¡ï¿½
 
     
     DRV_AVS_CMD_
@@ -446,8 +446,8 @@ typedef enum __AVS_TIME_TYPE
 
 typedef enum __CEDAR_VIDEO_FMT
 {
-    CEDAR_VBS_TYPE_NONE = 0,            /* Ã»ÓÐÊÓÆµÁ÷                           */
-    CEDAR_VBS_TYPE_UNKNOWN,              /* ÓÐÊÓÆµÁ÷,µ«ÎÞ·¨Ê¶±ð                  */
+    CEDAR_VBS_TYPE_NONE = 0,            /* Ã»ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½                           */
+    CEDAR_VBS_TYPE_UNKNOWN,              /* ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½,ï¿½ï¿½ï¿½Þ·ï¿½Ê¶ï¿½ï¿½                  */
 
     CEDAR_VBS_TYPE_JPEG,
     CEDAR_VBS_TYPE_MJPEG,
@@ -797,10 +797,7 @@ extern void avs_counter_start();
 extern void avs_counter_pause();
 extern void avs_counter_reset();
 extern s64 avs_counter_get_time_us();
-extern s64 avs_counter_get_time_ms();
-extern void avs_counter_adjustl(long val);
-extern void avs_counter_adjustg(long val);
-extern void avs_counter_adjust(int val);
+extern void avs_counter_adjust_abs(int val);
 
 #endif  //_CEDAR_MALLOC_H_
 

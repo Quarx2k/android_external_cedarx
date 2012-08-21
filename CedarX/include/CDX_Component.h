@@ -126,15 +126,19 @@ OMX_API OMX_ERRORTYPE ClockComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE DemuxComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE DemuxNetworkComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE DemuxSftNetworkComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
+OMX_API OMX_ERRORTYPE DemuxStreammingSourceComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
+OMX_API OMX_ERRORTYPE aw_demux_component_init(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE VideoDecComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE VideoRenderComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE AudioDecComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE AudioRenderComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE SubtitleComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 
-OMX_API OMX_ERRORTYPE RecSourceComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
+OMX_API OMX_ERRORTYPE VideoSourceComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
+OMX_API OMX_ERRORTYPE AudioSourceComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE VideoEncComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE AudioEncComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
+OMX_API OMX_ERRORTYPE AudioTransmitComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 OMX_API OMX_ERRORTYPE RecRenderComponentInit(OMX_IN OMX_HANDLETYPE hComponent);
 
 OMX_API OMX_ERRORTYPE OMX_AddTunnelInfoChain(CDX_TUNNELLINKTYPE *cdx_tunnel_link,OMX_IN  OMX_HANDLETYPE hOutput,OMX_IN  OMX_U32 nPortOutput,OMX_IN  OMX_HANDLETYPE hInput,OMX_IN  OMX_U32 nPortInput);

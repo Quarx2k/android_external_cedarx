@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 #define LOG_TAG "CedarXSoftwareRenderer"
-#include <utils/Log.h>
-
-#include "CedarXSoftwareRenderer.h"
+#include <CDX_Debug.h>
 
 #include <binder/MemoryHeapBase.h>
+
+#if (CEDARX_ANDROID_VERSION < 7)
 #include <binder/MemoryHeapPmem.h>
+#include <surfaceflinger/Surface.h>
+#include <ui/android_native_buffer.h>
+#else
+#include <system/window.h>
+#endif
+
 #include <media/stagefright/foundation/ADebug.h>
 #include <media/stagefright/MetaData.h>
-#include <android/native_window_jni.h>
-#include <gui/Surface.h>
-//#include <ui/android_native_buffer.h>
-#include <EGL/egl.h>
 #include <ui/GraphicBufferMapper.h>
 #include <gui/ISurfaceTexture.h>
+
+#include "CedarXSoftwareRenderer.h"
 
 namespace android {
 
@@ -39,7 +43,7 @@ CedarXSoftwareRenderer::CedarXSoftwareRenderer(
       mNativeWindow(nativeWindow) {
     int32_t tmp;
     CHECK(meta->findInt32(kKeyColorFormat, &tmp));
-    mColorFormat = (OMX_COLOR_FORMATTYPE)tmp;
+    //mColorFormat = (OMX_COLOR_FORMATTYPE)tmp;
 
     //CHECK(meta->findInt32(kKeyScreenID, &screenID));
     //CHECK(meta->findInt32(kKeyColorFormat, &halFormat));
@@ -106,7 +110,7 @@ void CedarXSoftwareRenderer::render(
     ANativeWindowBuffer *buf;
     int err;
     if ((err = mNativeWindow->dequeueBuffer(mNativeWindow.get(), &buf)) != 0) {
-        ALOGW("Surface::dequeueBuffer returned error %d", err);
+        LOGW("Surface::dequeueBuffer returned error %d", err);
         return;
     }
 
@@ -125,10 +129,9 @@ void CedarXSoftwareRenderer::render(
     size_t dst_c_stride = ALIGN(buf->stride / 2, 16);
     size_t dst_c_size = dst_c_stride * buf->height / 2;
 
-    //LOGV("buf->stride:%d buf->height:%d", buf->stride, buf->height);
-    memcpy(dst, data, dst_y_size * 3 / 2); 
-    ALOGV("render size error!");
-//    memcpy(dst, data, dst_y_size + dst_c_size*2);
+    //LOGV("buf->stride:%d buf->height:%d WXH:%dx%d dst:%p data:%p", buf->stride, buf->height, mWidth, mHeight, dst, data);
+    memcpy(dst, data, dst_y_size + dst_c_size*2);
+    //memcpy(dst, data, dst_y_size * 3 / 2); LOGV("render size error!");
 
 #if 0
 		{
@@ -137,9 +140,11 @@ void CedarXSoftwareRenderer::render(
 
 			if(dec_count == 60)
 			{
-				fp = fopen("/mnt/sdcard/t.yuv","wb");
+				fp = fopen("/data/camera/t.yuv","wb");
 				LOGD("write start fp:%d addr:%p",fp,data);
-				fwrite(dst,1,buf->stride * buf->height * 3 / 2,fp);
+				fwrite(dst,1,buf->stride * buf->height,fp);
+				fwrite(dst + buf->stride * buf->height * 5/4,1,buf->stride * buf->height / 4,fp);
+				fwrite(dst + buf->stride * buf->height,1,buf->stride * buf->height / 4,fp);
 				fclose(fp);
 				LOGD("write finish");
 			}
@@ -151,7 +156,7 @@ void CedarXSoftwareRenderer::render(
     CHECK_EQ(0, mapper.unlock(buf->handle));
 
     if ((err = mNativeWindow->queueBuffer(mNativeWindow.get(), buf)) != 0) {
-        ALOGW("Surface::queueBuffer returned error %d", err);
+        LOGW("Surface::queueBuffer returned error %d", err);
     }
     buf = NULL;
 

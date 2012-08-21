@@ -29,6 +29,7 @@
 #include <CDX_Resource_Manager.h>
 #include <tmessage.h>
 #include <tsemaphore.h>
+#include <CDX_UglyDef.h>
 
 #include "libcedarv.h"
 
@@ -36,9 +37,9 @@ typedef OMX_ERRORTYPE *(*ThirdpartComponentInit)(
 		OMX_HANDLETYPE hComponent);
 
 typedef struct CedarXPlayerContext{
-	CedarXDataSourceDesc data_source_desc;
-	CDX_S32 init_flags;
-	CDX_S32 flags;
+	CedarXDataSourceDesc data_src_desc;
+	CDX_S32 comp_exist_flags;
+	CDX_S32 comp_response_flags;
 	CDX_S32 exit_flags;
 	CDX_S32 exit_flags_backup;
 	CDX_S32 eof_flags;
@@ -49,7 +50,8 @@ typedef struct CedarXPlayerContext{
 	CEDARX_STATES states;
 	CEDARX_STATES transient_states;
 	CEDARX_AUDIO_OUT_TYPE audio_out_type;
-	CDX_S64 pause_position;
+	CDX_S64 temp_position;
+	CDX_S32 is_pausing;
 	CDX_S32 is_manual_pause;
 
 	ThirdpartComponentInit thirdpart_component_init;
@@ -66,8 +68,9 @@ typedef struct CedarXPlayerContext{
 	OMX_S32 is_hardware_init;
 	OMX_S32 fatal_error;
 	OMX_S32	disable_xxxx_track;
+	OMX_S32	disable_media_type;
 	OMX_S32	audio_mute_mode; //0: none 1: mute left 2: mute right 3: mute all
-	audio_file_info_t audio_metadata;
+	CedarXMetaData cdx_metadata;
 	CEDARV_REQUEST_CONTEXT cedarv_req_ctx;
 
 	OMX_S32 sub_enable;
@@ -79,12 +82,14 @@ typedef struct CedarXPlayerContext{
 	CDX_TUNNELLINKTYPE cdx_tunnels_link;
 
 	pthread_mutex_t cdx_player_mutex;
+	pthread_mutex_t cdx_event_mutex;
 	pthread_t thread_id;
 	message_quene_t  msg_queue;
 	cdx_sem_t cdx_sem_wait_message;
 	pthread_mutex_t msg_sync_mutex;
 	int msg_id_processed;
 	int msg_id_index;
+	int msg_processed_stop_async;
 
 	cdx_sem_t cdx_sem_demux_cmd;
 	cdx_sem_t cdx_sem_video_decoder_cmd;
@@ -116,16 +121,23 @@ typedef struct CedarXPlayerContext{
 	OMX_S32 	cedarv_output_setting;
 
 	OMX_S32     soft_chip_version;
+	OMX_S32		max_resolution;
 	OMX_S32		network_engine;
+
+	OMX_S8		player_can_seek;
+	//0:normal foramt; 1:ts, 2:m2ts
+	OMX_S8		container_type;
+    OMX_U8     play_bd_file;
 }CedarXPlayerContext;
 
 #include "CDX_PlayerAPI.h"
 
 typedef struct CedarXMediaRetriverContext{
 	int bIsCaptureInit;
-	audio_file_info_t audio_metadata;
-	CedarXDataSourceDesc data_source_desc;
+	CedarXMetaData cdx_metadata;
+	CedarXDataSourceDesc data_src_desc;
 	CEDARV_REQUEST_CONTEXT cedarv_req_ctx;
+	void *vd_thumb_ctx;
 }CedarXMediaRetriverContext;
 
 #endif

@@ -20,8 +20,9 @@
 
 
 #include <utils/RefBase.h>
-//#include <ui/android_native_buffer.h>
-#include <OMX_IVCommon.h>
+#if (CEDARX_ANDROID_VERSION < 7)
+#include <ui/android_native_buffer.h>
+#endif
 #include <hardware/hwcomposer.h>
 
 namespace android {
@@ -36,7 +37,7 @@ enum VIDEORENDER_CMD
     VIDEORENDER_CMD_SETFRAMEPARA    = HWC_LAYER_SETFRAMEPARA    ,
     VIDEORENDER_CMD_GETCURFRAMEPARA = HWC_LAYER_GETCURFRAMEPARA ,
     VIDEORENDER_CMD_QUERYVBI        = HWC_LAYER_QUERYVBI        ,
-    VIDEORENDER_CMD_SETSCREEN       = HWC_LAYER_SETSCREEN       ,
+    VIDEORENDER_CMD_SETSCREEN       = HWC_LAYER_SETMODE       ,
     VIDEORENDER_CMD_SHOW            = HWC_LAYER_SHOW            ,
     VIDEORENDER_CMD_RELEASE         = HWC_LAYER_RELEASE         ,
     VIDEORENDER_CMD_SET3DMODE       = HWC_LAYER_SET3DMODE       ,
@@ -51,6 +52,7 @@ enum VIDEORENDER_CMD
     VIDEORENDER_CMD_GETWHITEEXTEN   = HWC_LAYER_GETWHITEEXTEN   ,
     VIDEORENDER_CMD_SETBLACKEXTEN   = HWC_LAYER_SETBLACKEXTEN   ,
     VIDEORENDER_CMD_GETBLACKEXTEN   = HWC_LAYER_GETBLACKEXTEN   ,
+    VIDEORENDER_CMD_SET_CROP		= 0x1000         ,
 };
 
 struct MetaData;
@@ -67,7 +69,7 @@ public:
 
     int control(int cmd, int para);
 private:
-    OMX_COLOR_FORMATTYPE mColorFormat;
+    //OMX_COLOR_FORMATTYPE mColorFormat;
     sp<ANativeWindow> mNativeWindow;
     int32_t mWidth, mHeight;
     int32_t mCropLeft, mCropTop, mCropRight, mCropBottom;

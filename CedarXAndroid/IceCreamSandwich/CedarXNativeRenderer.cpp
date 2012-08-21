@@ -15,16 +15,19 @@
  */
 
 #define LOG_TAG "CedarXNativeRenderer"
-#include <utils/Log.h>
+#include <CDX_Debug.h>
 
 #include "CedarXNativeRenderer.h"
-
-#include <binder/MemoryHeapBase.h>
-#include <binder/MemoryHeapPmem.h>
 #include <media/stagefright/foundation/ADebug.h>
 #include <media/stagefright/MetaData.h>
-#include <gui/Surface.h>
-//#include <ui/android_native_buffer.h>
+
+#include <binder/MemoryHeapBase.h>
+#if (CEDARX_ANDROID_VERSION < 7)
+#include <binder/MemoryHeapPmem.h>
+#include <surfaceflinger/Surface.h>
+#include <ui/android_native_buffer.h>
+#endif
+
 #include <ui/GraphicBufferMapper.h>
 #include <gui/ISurfaceTexture.h>
 
@@ -121,8 +124,10 @@ int CedarXNativeRenderer::control(int cmd, int para) {
 	case VIDEORENDER_CMD_SETBLACKEXTEN   :
 	case VIDEORENDER_CMD_GETBLACKEXTEN   :
 		return mNativeWindow->perform(mNativeWindow.get(), NATIVE_WINDOW_SETPARAMETER, cmd, para);
+	case VIDEORENDER_CMD_SET_CROP		:
+		return mNativeWindow->perform(mNativeWindow.get(), NATIVE_WINDOW_SET_CROP,para);
 	default:
-		ALOGW("undefined command!");
+		LOGW("undefined command!");
 		break;
 	}
 

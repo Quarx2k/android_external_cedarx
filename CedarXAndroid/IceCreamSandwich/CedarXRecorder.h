@@ -8,6 +8,10 @@
 #include <binder/MemoryHeapBase.h>
 #include <media/AudioRecord.h>
 #include <camera/ICameraRecordingProxyListener.h>
+#include <media/stagefright/MediaSource.h>
+#include <media/stagefright/MediaBuffer.h>
+
+#include <CDX_Recorder.h>
 
 namespace android {
 
@@ -16,7 +20,12 @@ class AudioRecord;
 
 #define AUDIO_LATENCY_TIME	700000		// US
 #define VIDEO_LATENCY_TIME	700000		// US
-#define MAX_FILE_SIZE		(2*1024*1024*1024 - 64*1024)
+#define MAX_FILE_SIZE		(2*1024*1024*1024LL - 64*1024)
+
+typedef enum CDX_RECORDER_MEDIATYPE {
+	CDX_RECORDER_MEDIATYPE_VIDEO = 0,
+	CDX_RECORDER_MEDIATYPE_AUDIO
+}CDX_RECORDER_MEDIATYPE;
 
 class CedarXRecorder{
 public:
@@ -24,9 +33,11 @@ public:
     ~CedarXRecorder();
 	
     status_t setCamera(const sp<ICamera>& camera, const sp<ICameraRecordingProxy>& proxy);
-	status_t setParamVideoCameraId(int32_t cameraId);
+    status_t setMediaSource(const sp<MediaSource>& mediasource, int type);
+    status_t setParamVideoCameraId(int32_t cameraId);
     status_t setListener(const sp<IMediaRecorderClient>& listener);
     status_t setPreviewSurface(const sp<Surface>& surface);
+    status_t queueBuffer(int index, int addr_y, int addr_c, int64_t timestamp);
     status_t prepare();
     status_t start();
     status_t pause();
@@ -57,6 +68,11 @@ public:
 	status_t setParamMaxFileDurationUs(int64_t timeUs);
 	status_t setParamMaxFileSizeBytes(int64_t bytes);
     status_t setOutputFile(int fd);
+    status_t setOutputPath(char *path);
+
+	// location
+	status_t setParamGeoDataLatitude(int64_t latitudex10000);
+	status_t setParamGeoDataLongitude(int64_t longitudex10000);
 
 	void CedarXReleaseFrame(int index);
 	void dataCallbackTimestamp(int64_t timestampUs, int32_t msgType, const sp<IMemory> &data);
@@ -65,8 +81,11 @@ public:
 
 	status_t setParamTimeLapseEnable(int32_t timeLapseEnable);
     status_t setParamTimeBetweenTimeLapseFrameCapture(int64_t timeUs);
+    status_t readMediaBufferCallback(void *buf_header);
 
 	int CedarXRecorderCallback(int event, void *info);
+
+	sp<IMemory> getOneBsFrame(int mode);
 
 	class CameraProxyListener: public BnCameraRecordingProxyListener {
 	public:
@@ -84,7 +103,11 @@ public:
 		DeathNotifier() {}
 		virtual void binderDied(const wp<IBinder>& who)
 		{
+#if (CEDARX_ANDROID_VERSION > 6)
 			ALOGI("Camera recording proxy died");
+#else
+			LOGI("Camera recording proxy died");
+#endif
 		}
 	};
 
@@ -131,6 +154,10 @@ private:
     int32_t mAudioChannels;
 	int32_t mSampleRate;
 
+	int32_t mGeoAvailable;
+	int32_t mLatitudex10000;
+	int32_t mLongitudex10000;
+
 	bool mCaptureTimeLapse;
 	// Time between capture of two frames during time lapse recording
     // Negative value indicates that timelapse is disabled.
@@ -142,7 +169,10 @@ private:
 	int64_t mLastTimeLapseFrameTimestampUs;
 
     int mOutputFd;
+    char *mUrl;
 	int32_t mCameraFlags;
+	int64_t mLastTimeStamp;
+	int32_t mMaxDurationPerFrame;
 
     enum CameraFlags {
         FLAGS_SET_CAMERA = 1L << 0,
@@ -156,11 +186,16 @@ private:
 
 	bool				mStarted;
 	uint 				mRecModeFlag;
-	AudioRecord 		* mRecord;
+	AudioRecord 		*mRecord;
+	CDXRecorder 		*mCdxRecorder;
 
 	int64_t				mLatencyStartUs;
 
-	sp<DeathNotifier> mDeathNotifier;
+	sp<MediaSource> 	mMediaSourceVideo;
+	MediaBuffer         *mInputBuffer;
+
+	sp<DeathNotifier>   mDeathNotifier;
+	sp<IMemory>         mBsFrameMemory;
 	
     CedarXRecorder(const CedarXRecorder &);
     CedarXRecorder &operator=(const CedarXRecorder &);

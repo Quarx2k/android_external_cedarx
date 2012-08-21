@@ -18,10 +18,10 @@
 
 #define SOFTWARE_RENDERER_H_
 
-#include <media/stagefright/ColorConverter.h>
 #include <utils/RefBase.h>
-#include <android/native_window_jni.h>
-//#include <ui/android_native_buffer.h>
+#if (CEDARX_ANDROID_VERSION < 7)
+#include <ui/android_native_buffer.h>
+#endif
 
 namespace android {
 
@@ -42,7 +42,7 @@ private:
         None,
     };
 
-    OMX_COLOR_FORMATTYPE mColorFormat;
+    //OMX_COLOR_FORMATTYPE mColorFormat;
     YUVMode mYUVMode;
     sp<ANativeWindow> mNativeWindow;
     int32_t mWidth, mHeight;
